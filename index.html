@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lubricadora JR - Sistema de Inventario</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Estilos Locales -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="h-full text-gray-900">
+
+    <!-- VISTA DE LOGIN    -->
+
+    <div id="login-view" class="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
+            <div class="text-center">
+                <div class="mx-auto h-16 w-16 bg-blue-600 rounded-full flex items-center justify-center">
+                    <i data-lucide="droplet" class="h-10 w-10 text-white"></i>
+                </div>
+                <h2 class="mt-6 text-3xl font-extrabold text-gray-900">Lubricadora JR</h2>
+                <p class="mt-2 text-sm text-gray-600">Sistema de Gestión de Inventario</p>
+            </div>
+            <form id="login-form" class="mt-8 space-y-6">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="username" class="sr-only">Usuario</label>
+                        <input id="username" name="username" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" placeholder="Usuario">
+                    </div>
+                    <div>
+                        <label for="password" class="sr-only">Contraseña</label>
+                        <input id="password" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" placeholder="Contraseña">
+                    </div>
+                </div>
+                <div>
+                    <!-- Botón de submit con IDs para el spinner de carga -->
+                    <button type="submit" 
+                            id="login-submit-btn"
+                            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                            <i data-lucide="lock" class="h-5 w-5 text-blue-500 group-hover:text-blue-400"></i>
+                        </span>
+                        <!-- Spans para el texto y el loader -->
+                        <span class="btn-text">Iniciar Sesión</span>
+                        <span class="loader hidden w-5 h-5 border-t-2 border-white border-solid rounded-full animate-spin"></span>
+                    </button>
+                </div>
+            </form>
+            <div id="login-error" class="hidden mt-4 bg-red-50 border-l-4 border-red-400 p-4">
+                <div class="flex"><div class="flex-shrink-0"><i data-lucide="alert-circle" class="h-5 w-5 text-red-400"></i></div><div class="ml-3"><p class="text-sm text-red-700" id="login-error-text">Error iniciando sesión</p></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!--VISTA PRINCIPAL DE LA APLICACIÓN -->
+    <div id="app-view" class="hidden h-full flex">
+        
+        <!-- BARRA LATERAL (Sidebar) -->
+        <div class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl">
+            <div class="h-20 flex items-center px-6 bg-slate-950 shadow-sm">
+                <i data-lucide="droplet" class="h-8 w-8 text-blue-500 mr-3"></i>
+                <span class="text-xl font-bold tracking-wide">Lubricadora JR</span>
+            </div>
+            <nav class="flex-1 px-4 py-6 space-y-2">
+                <a href="#" id="inventory-link" data-target="inventory-view" class="nav-link flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-all duration-200 group">
+                    <i data-lucide="package" class="h-5 w-5 mr-3 group-hover:text-blue-400 transition-colors"></i> Inventario
+                </a>
+                <a href="#" id="add-product-link" data-target="add-product-view" class="nav-link admin-only flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-all duration-200 group">
+                    <i data-lucide="plus-circle" class="h-5 w-5 mr-3 group-hover:text-green-400 transition-colors"></i> Agregar Producto
+                </a>
+                <a href="#" id="delete-product-link" data-target="delete-product-view" class="nav-link admin-only flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-all duration-200 group">
+                    <i data-lucide="trash-2" class="h-5 w-5 mr-3 group-hover:text-red-400 transition-colors"></i> Borrar Producto
+                </a>
+                
+                <!-- Separador de Administración -->
+                <div id="admin-section" class="admin-only px-4 pt-4 pb-2">
+                    <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Administración</span>
+                </div>
+
+                <a href="#" id="manage-brands-link" data-target="manage-brands-view" class="nav-link admin-only flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-all duration-200 group">
+                    <i data-lucide="tags" class="h-5 w-5 mr-3 group-hover:text-amber-400 transition-colors"></i> Administrar Marcas
+                </a>
+                <a href="#" id="manage-categories-link" data-target="manage-categories-view" class="nav-link admin-only flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-all duration-200 group">
+                    <i data-lucide="layout-grid" class="h-5 w-5 mr-3 group-hover:text-purple-400 transition-colors"></i> Administrar Categorías
+                </a>
+                <!-- Enlace para Proveedores -->
+                <a href="#" id="manage-suppliers-link" data-target="manage-suppliers-view" class="nav-link admin-only flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-all duration-200 group">
+                    <i data-lucide="truck" class="h-5 w-5 mr-3 group-hover:text-cyan-400 transition-colors"></i> Administrar Proveedores
+                </a>
+                <!-- Enlace para Usuarios (solo admin) -->
+                <a href="#" id="manage-users-link" data-target="manage-users-view" class="nav-link admin-only hidden flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition-all duration-200 group">
+                    <i data-lucide="users" class="h-5 w-5 mr-3 group-hover:text-emerald-400 transition-colors"></i> Administrar Usuarios
+                </a>
+            </nav>
+            <!-- Sección de Usuario y Cerrar Sesión -->
+            <div class="p-4 bg-slate-950 shadow-inner">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0"><div class="h-10 w-10 rounded-full bg-slate-700 flex items-center justify-center"><i data-lucide="user" class="h-6 w-6 text-slate-300"></i></div></div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-white" id="user-display-name">Cargando...</p>
+                        <p class="text-xs text-slate-400" id="user-display-role"></p>
+                    </div>
+                </div>
+                <button id="logout-btn" class="mt-4 w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none transition-colors duration-200">
+                    <i data-lucide="log-out" class="h-4 w-4 mr-2"></i> Cerrar Sesión
+                </button>
+            </div>
+        </div>
+
+        <!-- ÁREA DE CONTENIDO PRINCIPAL (Fondo Blanco) -->
+        <div class="flex-1 h-screen overflow-y-auto bg-white">
+            <main class="max-w-7xl mx-auto py-8 px-6 lg:px-8">
+
+                
+               <!-- VISTA: INVENTARIO PRINCIPAL -->
+                <div id="inventory-view" class="view-content hidden space-y-6">
+                    <div class="flex justify-between items-center pb-5 border-b border-gray-100">
+                        <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Inventario Principal</h1>
+                        <div class="relative w-96">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i data-lucide="search" class="h-5 w-5 text-gray-400"></i></div>
+                            <input type="text" id="search-input" class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all duration-200" placeholder="Buscar...">
+                        </div>
+                    </div>
+                    <div class="bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-100">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                                    <th scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marca</th>
+                                    <th scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
+                                    <th scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                                    <th scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">P. Venta</th>
+                                    <th scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Creado</th>
+                                    <th scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Editado</th>
+                                    <th scope="col" class="relative px-4 py-4">
+                                    <span class="sr-only">Acciones</span></th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-100" id="inventory-table-body">
+                                <tr id="inventory-loading">
+                                   <td colspan="8" class="px-6 py-4 text-center">
+                                        <div class="flex items-center justify-center">
+                                          <i data-lucide="loader-2" class="w-5 h-5 animate-spin mr-2"></i>
+                                             Cargando inventario...
+                                         </div>
+                                     </td>
+                                     </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+                <!-- VISTA: AGREGAR PRODUCTO            -->
+
+                <div id="add-product-view" class="view-content hidden">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="bg-white shadow-sm rounded-2xl border border-gray-100 overflow-hidden">
+                            <div class="px-8 py-6 border-b border-gray-100 bg-white">
+                                <h2 class="text-2xl font-bold text-gray-900">Registrar Nuevo Producto</h2>
+                                <p class="mt-1 text-sm text-gray-500">Complete la información para añadir un ítem al inventario.</p>
+                            </div>
+                            <div class="px-8 py-8">
+                                <form id="add-product-form" class="space-y-8">
+                                    <div class="grid grid-cols-1 gap-y-6 gap-x-6 sm:grid-cols-2">
+                                        <div class="sm:col-span-2">
+                                            <label for="prod-name" class="block text-sm font-medium text-gray-700 mb-1">Nombre del Producto *</label>
+                                            <input type="text" id="prod-name" name="name" required class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white transition-all duration-200" placeholder="Ej: Aceite Sintético 5W-30">
+                                        </div>
+                                         <div>
+                                            <label for="prod-brand" class="block text-sm font-medium text-gray-700 mb-1">Marca *</label>
+                                            <select id="prod-brand" name="brand_id" required class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm bg-white"><option value="">Cargando...</option></select>
+                                         </div>
+                                         <div>
+                                            <label for="prod-category" class="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
+                                            <select id="prod-category" name="category_id" required class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm bg-white"><option value="">Cargando...</option></select>
+                                         </div>
+                                         <div>
+                                            <label for="prod-spec" class="block text-sm font-medium text-gray-700 mb-1">Especificación</label>
+                                            <input type="text" id="prod-spec" name="specification" class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm bg-white" placeholder="Ej: 5W-30 Semi-Sintético">
+                                         </div>
+                                         <div>
+                                            <label for="prod-unit" class="block text-sm font-medium text-gray-700 mb-1">Unidad *</label>
+                                            <select id="prod-unit" name="unit" required class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm bg-white">
+                                                <option value="">Seleccione...</option>
+                                                <option>Unidad (Und)</option>
+                                                <option>Litro (Lt)</option>
+                                                <option>Galón (Gl)</option>
+                                                <option>Kilo (Kg)</option>
+                                                <option>Tubo (Und)</option>
+                                            </select>
+                                         </div>
+                                    </div>
+                                    <div class="border-t border-gray-100 pt-6">
+                                        <h3 class="text-lg font-medium text-gray-900 mb-4">Detalles Comerciales</h3>
+                                        <div class="grid grid-cols-1 gap-y-6 gap-x-6 sm:grid-cols-2">
+                                            <div class="sm:col-span-2">
+                                                <label for="prod-supplier" class="block text-sm font-medium text-gray-700 mb-1">Proveedor</label>
+                                                <select id="prod-supplier" name="supplier_id" class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm bg-white"><option value="">Cargando...</option></select>
+                                            </div>
+                                            <div>
+                                                <label for="prod-cost" class="block text-sm font-medium text-gray-700 mb-1">Costo *</label>
+                                                <input type="number" id="prod-cost" name="cost" step="0.01" required class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm bg-white" placeholder="0.00">
+                                            </div>
+                                            <div>
+                                                <label for="prod-price" class="block text-sm font-medium text-gray-700 mb-1">Precio Venta *</label>
+                                                <input type="number" id="prod-price" name="price" step="0.01" required class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm bg-white" placeholder="0.00">
+                                            </div>
+                                            <div>
+                                                <label for="prod-stock" class="block text-sm font-medium text-gray-700 mb-1">Stock Inicial *</label>
+                                                <input type="number" id="prod-stock" name="stock" required class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm bg-white" placeholder="0">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label for="prod-info" class="block text-sm font-medium text-gray-700 mb-1">Información Adicional</label>
+                                        <textarea id="prod-info" name="info" rows="3"
+                                                  class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white" placeholder="Ubicación en bodega, notas, etc..."></textarea>
+                                    </div>
+                                    <div class="flex justify-end pt-6 border-t border-gray-100">
+                                        <button type="button" class="bg-white py-3 px-6 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 mr-4">Cancelar</button>
+                                        <button type="submit" class="inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700">Guardar Producto</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- VISTA: BORRAR PRODUCTO   -->
+
+                <div id="delete-product-view" class="view-content hidden space-y-6">
+                    <div class="flex justify-between items-center pb-5 border-b border-gray-100">
+                        <h1 class="text-3xl font-bold text-red-600 tracking-tight">Borrar Productos</h1>
+                        <p class="text-sm text-gray-500">Solo se pueden eliminar productos con stock en 0.</p>
+                    </div>
+                    <div class="max-w-xl">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i data-lucide="search" class="h-5 w-5 text-gray-400"></i></div>
+                            <input type="text" id="delete-search" class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-all duration-200" placeholder="Buscar producto a borrar...">
+                        </div>
+                    </div>
+                    <div class="bg-white shadow-sm rounded-2xl overflow-hidden border border-red-100" id="delete-results-container">
+                        <ul id="delete-results-list" class="divide-y divide-gray-100">
+                            <li class="px-6 py-12 text-center text-gray-500">
+                                <i data-lucide="search" class="mx-auto h-12 w-12 text-gray-300 mb-4"></i>
+                                <p class="text-lg font-medium text-gray-900">Busque un producto arriba</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+
+                <!-- VISTA: ADMINISTRAR MARCAS  -->
+
+                <div id="manage-brands-view" class="view-content hidden space-y-6">
+                    <div class="flex justify-between items-center pb-5 border-b border-gray-100">
+                        <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Administrar Marcas</h1>
+                    </div>
+
+                    <div class="bg-white shadow-sm rounded-2xl border border-gray-100 overflow-hidden max-w-xl mx-auto">
+                        <div class="px-8 py-6 border-b border-gray-100 bg-white">
+                            <h2 class="text-xl font-bold text-gray-900">Añadir Nueva Marca</h2>
+                        </div>
+                        <form id="add-brand-form" class="px-8 py-8 space-y-4">
+                            <div>
+                                <label for="brand-name" class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Marca *</label>
+                                <input type="text" id="brand-name" name="name" required
+                                       class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white" placeholder="Ej: Castrol, Mobil 1">
+                            </div>
+                            <div>
+                                <label for="brand-description" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                <textarea id="brand-description" name="description" rows="3"
+                                          class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white" placeholder="Ej: Líder en aceites sintéticos..."></textarea>
+                            </div>
+                            
+                            <div class="flex justify-end pt-4">
+                                <button type="submit"
+                                        class="inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200">
+                                    <i data-lucide="plus" class="h-5 w-5 mr-2"></i> Añadir Marca
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-100 max-w-3xl mx-auto mt-8">
+                        <div class="px-8 py-6 border-b border-gray-100 bg-white">
+                            <h2 class="text-xl font-bold text-gray-900">Marcas Existentes</h2>
+                        </div>
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre de Marca</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                                    <th scope="col" class="relative px-6 py-4"><span class="sr-only">Acciones</span></th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-100" id="brands-table-body">
+                                <tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500">Cargando marcas...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+
+                <!-- VISTA: ADMINISTRAR CATEGORÍAS     -->
+
+                <div id="manage-categories-view" class="view-content hidden space-y-6">
+                    <div class="flex justify-between items-center pb-5 border-b border-gray-100">
+                        <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Administrar Categorías</h1>
+                    </div>
+
+                    <div class="bg-white shadow-sm rounded-2xl border border-gray-100 overflow-hidden max-w-xl mx-auto">
+                        <div class="px-8 py-6 border-b border-gray-100 bg-white">
+                            <h2 class="text-xl font-bold text-gray-900">Añadir Nueva Categoría</h2>
+                        </div>
+                        <form id="add-category-form" class="px-8 py-8 space-y-4">
+                            <div>
+                                <label for="category-name" class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Categoría *</label>
+                                <input type="text" id="category-name" name="name" required
+                                       class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white" placeholder="Ej: Aceites, Filtros">
+                            </div>
+                            <div>
+                                <label for="category-description" class="block text-sm font-medium text-gray-700 mb-1">Descripción</Dlabel>
+                                <textarea id="category-description" name="description" rows="3"
+                                          class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white" placeholder="Ej: Lubricantes para motor a gasolina o diésel..."></textarea>
+                            </div>
+                            
+                            <div class="flex justify-end pt-4">
+                                <button type="submit"
+                                        class="inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200">
+                                    <i data-lucide="plus" class="h-5 w-5 mr-2"></i> Añadir Categoría
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-100 max-w-3xl mx-auto mt-8">
+                        <div class="px-8 py-6 border-b border-gray-100 bg-white">
+                            <h2 class="text-xl font-bold text-gray-900">Categorías Existentes</h2>
+                        </div>
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre de Categoría</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                                    <th scope="col" class="relative px-6 py-4"><span class="sr-only">Acciones</span></th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-100" id="categories-table-body">
+                                <tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500">Cargando categorías...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+
+                <!-- VISTA: ADMINISTRAR PROVEEDORES-->
+
+                <div id="manage-suppliers-view" class="view-content hidden space-y-6">
+                    <div class="flex justify-between items-center pb-5 border-b border-gray-100">
+                        <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Administrar Proveedores</h1>
+                    </div>
+
+                    <!-- Formulario para Añadir/Editar Proveedor -->
+                    <div class="bg-white shadow-sm rounded-2xl border border-gray-100 overflow-hidden max-w-4xl mx-auto">
+                        <div class="px-8 py-6 border-b border-gray-100 bg-white">
+                            <h2 class="text-xl font-bold text-gray-900">Añadir Nuevo Proveedor</h2>
+                            <p class="mt-1 text-sm text-gray-500">Complete la información del proveedor.</p>
+                        </div>
+                        <form id="add-supplier-form" class="px-8 py-8">
+                            <div class="grid grid-cols-1 gap-y-6 gap-x-6 sm:grid-cols-2">
+                                <div>
+                                    <label for="supplier-name" class="block text-sm font-medium text-gray-700 mb-1">Nombre / Razón Social *</label>
+                                    <input type="text" id="supplier-name" name="name" required
+                                           class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white" placeholder="Ej: Importadora A S.A.">
+                                </div>
+                                <div>
+                                    <label for="supplier-ruc" class="block text-sm font-medium text-gray-700 mb-1">RUC</label>
+                                    <input type="text" id="supplier-ruc" name="ruc" maxlength="13"
+                                           class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white" placeholder="Ej: 0991234567001">
+                                </div>
+                                <div>
+                                    <label for="supplier-phone" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                                    <input type="tel" id="supplier-phone" name="phone"
+                                           class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white" placeholder="Ej: 0991234567">
+                                </div>
+                                <div>
+                                    <label for="supplier-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input type="email" id="supplier-email" name="email"
+                                           class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white" placeholder="Ej: ventas@proveedor.com">
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label for="supplier-contact" class="block text-sm font-medium text-gray-700 mb-1">Persona de Contacto</label>
+                                    <input type="text" id="supplier-contact" name="contact_person"
+                                           class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white" placeholder="Ej: Sr. Juan Pérez">
+                                </div>
+                            </div>
+                            <div class="flex justify-end pt-6 mt-6 border-t border-gray-100">
+                                <button type="submit"
+                                        class="inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200">
+                                    <i data-lucide="plus" class="h-5 w-5 mr-2"></i> Añadir Proveedor
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tabla de Proveedores Existentes -->
+                    <div class="bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-100 mt-8">
+                        <div class="px-8 py-6 border-b border-gray-100 bg-white">
+                            <h2 class="text-xl font-bold text-gray-900">Proveedores Existentes</h2>
+                        </div>
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre / RUC</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contacto</th>
+                                    <th scope="col" class="relative px-6 py-4"><span class="sr-only">Acciones</span></th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-100" id="suppliers-table-body">
+                                <tr><td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Cargando proveedores...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VISTA: ADMINISTRAR USUARIOS (Solo Admin) -->
+
+                <div id="manage-users-view" class="view-content hidden space-y-6">
+                    <div class="flex justify-between items-center pb-5 border-b border-gray-100">
+                        <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Administrar Usuarios</h1>
+                    </div>
+
+                    <!-- Formulario para Añadir Usuario -->
+                    <div class="bg-white shadow-sm rounded-2xl border border-gray-100 overflow-hidden max-w-3xl mx-auto">
+                        <div class="px-8 py-6 border-b border-gray-100 bg-white">
+                            <h2 class="text-xl font-bold text-gray-900">Crear Nuevo Usuario</h2>
+                            <p class="mt-1 text-sm text-gray-500">Complete la información del nuevo usuario.</p>
+                        </div>
+                        <form id="add-user-form" class="px-8 py-8">
+                            <div class="grid grid-cols-1 gap-y-6 gap-x-6 sm:grid-cols-2">
+                                <div>
+                                    <label for="user-username" class="block text-sm font-medium text-gray-700 mb-1">Nombre de Usuario *</label>
+                                    <input type="text" id="user-username" name="username" required
+                                           class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white" placeholder="Ej: vendedor2">
+                                </div>
+                                <div>
+                                    <label for="user-password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña *</label>
+                                    <input type="password" id="user-password" name="password" required
+                                           class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white" placeholder="Mínimo 5 caracteres">
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label for="user-fullname" class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo *</label>
+                                    <input type="text" id="user-fullname" name="full_name" required
+                                           class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white" placeholder="Ej: María González">
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label for="user-role" class="block text-sm font-medium text-gray-700 mb-1">Rol *</label>
+                                    <select id="user-role" name="role" required
+                                            class="block w-full px-4 py-3 rounded-xl border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white">
+                                        <option value="">-- Seleccione un Rol --</option>
+                                        <option value="vendedor">Vendedor</option>
+                                        <option value="administrador">Administrador</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="flex justify-end pt-6 mt-6 border-t border-gray-100">
+                                <button type="submit"
+                                        class="inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200">
+                                    <i data-lucide="user-plus" class="h-5 w-5 mr-2"></i> Crear Usuario
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tabla de Usuarios Existentes -->
+                    <div class="bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-100 mt-8">
+                        <div class="px-8 py-6 border-b border-gray-100 bg-white">
+                            <h2 class="text-xl font-bold text-gray-900">Usuarios Existentes</h2>
+                        </div>
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre Completo</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Creación</th>
+                                    <th scope="col" class="relative px-6 py-4"><span class="sr-only">Acciones</span></th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-100" id="users-table-body">
+                                <tr><td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Cargando usuarios...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL (Para Editar y Ver Info)-->
+     
+    <div id="product-modal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" id="modal-backdrop"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+                <div class="bg-white px-8 pt-8 pb-6">
+                    <div class="flex justify-between items-start mb-6">
+                        <h3 class="text-2xl font-bold text-gray-900" id="modal-title">Editar Producto</h3>
+                        <button type="button" id="modal-close-btn" class="bg-white rounded-full p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100"><i data-lucide="x" class="h-6 w-6"></i></button>
+                    </div>
+                    <!-- El formulario del modal se llenará con JS -->
+                    <form id="edit-product-form" class="space-y-6"></form>
+                </div>
+                <div class="bg-gray-50 px-8 py-4 sm:flex sm:flex-row-reverse border-t border-gray-100">
+                    <button type="submit" form="edit-product-form" id="modal-save-btn" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-3 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">Guardar Cambios</button>
+                    <button type="button" id="modal-cancel-btn" class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+ <!-- TOAST: Mensaje de bienvenida al iniciar sesión -->
+    <div id="toast" class="hidden fixed top-4 right-4 z-20">
+        <div class="flex items-center max-w-md px-4 py-3 bg-slate-900 text-white rounded-xl shadow-lg border border-slate-800">
+            <i data-lucide="user-check" class="h-5 w-5 text-green-400 mr-3"></i>
+            <p id="toast-text" class="text-sm font-medium">Bienvenido</p>
+        </div>
+    </div>
+    <!-- Script principal de la aplicación -->
+    <script src="script.js"></script>
+    <!-- Script para inicializar los iconos -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

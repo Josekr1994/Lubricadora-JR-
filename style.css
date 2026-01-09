@@ -1,0 +1,41 @@
+/* Estilos personalizados para la aplicación */
+
+/* Ocultar scrollbar (opcional, para un look más limpio) */
+/* ::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-thumb {
+    background-color: #334155; // slate-700
+    border-radius: 4px;
+}
+::-webkit-scrollbar-track {
+    background-color: #f1f5f9; // slate-100
+} */
+
+
+/* Estilo para el ítem activo en el menú lateral */
+/* (Ahora manejado directamente con JS y Tailwind) */
+
+/* Animación de entrada para el modal */
+#product-modal {
+    transition: opacity 0.3s ease-out;
+}
+#product-modal > div > div:last-child {
+     transition: all 0.3s ease-out;
+}
+
+/* Clases para mostrar/ocultar el modal */
+.modal-entering {
+    opacity: 1;
+}
+.modal-entering > div > div:last-child {
+    opacity: 1;
+    transform: translateY(0);
+}
+.modal-leaving {
+    opacity: 0;
+}
+.modal-leaving > div > div:last-child {
+    opacity: 0;
+    transform: translateY(20px);
+}
